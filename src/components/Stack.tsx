@@ -1,34 +1,35 @@
 import { ArrowRight } from "lucide-react";
-import { stack } from "../data/content";
+import { stack, contact } from "../data/content";
 import { toolIcon } from "../lib/icons";
 
 export default function Stack() {
+  const href = contact.email ? `mailto:${contact.email}` : "#contact";
   return (
     <section id="stack" className="stack">
-      <div className="eyebrow">{stack.eyebrow}</div>
-      <h2 className="h2">
+      <div className="eyebrow" data-reveal>{stack.eyebrow}</div>
+      <h2 className="h2" data-reveal style={{ ["--d" as string]: "0.08s" }}>
         Modern tools<span className="o">.</span>
         <br />
         Real impact<span className="o">.</span>
       </h2>
-      <p className="p">
+      <p className="p" data-reveal style={{ ["--d" as string]: "0.16s" }}>
         {stack.body[0]}
         <br />
         {stack.body[1]}
       </p>
 
       <i className="vline" style={{ left: 260 }} />
-      <div className="tiles">
-        {stack.items.map((t) => (
-          <div key={t} className="tile">
-            <div className="box">{t === "Next.js" ? <span style={{ color: "#fff", fontWeight: 600, fontSize: 22 }}>N</span> : toolIcon(t, 25)}</div>
+      <ul className="tiles" aria-label="Technologies">
+        {stack.items.map((t, i) => (
+          <li key={t} className="tile" tabIndex={0} data-reveal style={{ ["--d" as string]: `${0.1 + (i % 7) * 0.07 + Math.floor(i / 7) * 0.15}s` }}>
+            <div className="box">{t === "Next.js" ? <span className="nlogo">N</span> : toolIcon(t, 25)}</div>
             <span>{t}</span>
-          </div>
+          </li>
         ))}
-      </div>
+      </ul>
       <i className="vline o" style={{ left: 796 }} />
 
-      <div className="cta" id="contact">
+      <div className="cta" id="contact" data-reveal style={{ ["--d" as string]: "0.2s" }}>
         <h3>
           {stack.cta.eyebrow.replace(".", "")}
           <span className="o">.</span>
@@ -38,7 +39,7 @@ export default function Stack() {
           <br />
           {stack.cta.body[1]}
         </p>
-        <a href={stack.cta.href} className="btn">
+        <a href={href} className="btn">
           {stack.cta.button} <ArrowRight />
         </a>
       </div>

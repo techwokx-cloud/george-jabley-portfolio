@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import {
   siNextdotjs, siReact, siNodedotjs, siPython, siDocker, siLinux, siTypescript,
-  siGithub, siYoutube, siGnubash,
+  siGithub, siYoutube, siGnubash, siTailwindcss, siSupabase, siVercel, siRender,
 } from "simple-icons";
 
 type Si = { path: string; hex: string };
@@ -37,6 +37,11 @@ const AiMark = ({ s }: { s: number }) => (
     ))}
   </svg>
 );
+const OpenAiMark = ({ s }: { s: number }) => (
+  <svg viewBox="0 0 24 24" width={s} height={s} fill="none" stroke="#10c9a0" strokeWidth="1.5" strokeLinejoin="round" aria-hidden>
+    {[0, 60, 120].map((a) => (<path key={a} transform={`rotate(${a} 12 12)`} d="M12 3.2l6.6 3.8v7.6L12 18.4 5.4 14.6V7z" />))}
+  </svg>
+);
 const CloudMark = ({ s, dark }: { s: number; dark?: boolean }) => (
   <svg viewBox="0 0 24 24" width={s} height={s} fill={dark ? "#1d1e23" : "#e5e7eb"} aria-hidden>
     <path d="M7 18a5 5 0 0 1-.6-9.96A6 6 0 0 1 18 9.5a4.2 4.2 0 0 1-.4 8.4V18H7z" /><path d="M12 10.5v5m0 0-2-2m2 2 2-2" stroke={dark ? "#fff" : "#111"} strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -53,6 +58,12 @@ export function toolIcon(name: string, size = 18, onLight = false): ReactNode {
     case "Linux": return <Brand icon={siLinux} size={size} color={onLight ? "#1f3a4d" : undefined} />;
     case "TypeScript": return <Brand icon={siTypescript} size={size} />;
     case "AI/LLM": return <AiMark s={size} />;
+    case "Tailwind CSS": return <Brand icon={siTailwindcss} size={size} />;
+    case "Supabase": return <Brand icon={siSupabase} size={size} />;
+    case "Vercel": return <Brand icon={siVercel} size={size} color="#fff" />;
+    case "Render": return <Brand icon={siRender} size={size} color="#fff" />;
+    case "GitHub": return <Brand icon={siGithub} size={size} color="#fff" />;
+    case "OpenAI API": return <OpenAiMark s={size} />;
     case "Cloud": return <CloudMark s={size} dark={onLight} />;
     default: return <Terminal s={size} />;
   }

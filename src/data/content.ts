@@ -38,13 +38,32 @@ export const about = {
   toolkit: ["Next.js", "Docker", "TypeScript", "Linux", "Node.js", "AI/LLM", "Python", "Cloud"],
 };
 
+// Set this to the address you want published on the site (visible to everyone).
+// While empty, the contact button scrolls to the contact block instead of opening a mail app.
+export const contact = {
+  email: "",
+};
+
 export const work = {
   eyebrow: "SELECTED WORK",
   filters: ["All Projects", "Mobile Apps", "Web Apps", "Windows Utilities", "AI & Automation", "Experimental"],
+  // `href` empty = no verified public URL yet (card is shown but does not link anywhere).
   projects: [
-    { name: "WingBM", tagline: "Business Management Platform", kind: "Web App", icon: "globe", image: "/images/work-1.jpg", href: "#case-study" },
-    { name: "BridgeAI", tagline: "Mental Wellbeing Companion", kind: "Mobile App", icon: "phone", image: "/images/work-2.jpg", href: "#" },
-    { name: "ChiefFlow AI", tagline: "SME Business Assistant", kind: "Web App", icon: "globe", image: "/images/work-3.jpg", href: "#" },
+    {
+      name: "WingBM", tagline: "Business Management Platform", kind: "Web App", icon: "globe",
+      image: "/images/work-1.jpg", href: "https://wingbm.vercel.app/",
+      categories: ["Web Apps"],
+    },
+    {
+      name: "BridgeAI", tagline: "Mental Wellbeing Companion", kind: "Mobile App", icon: "phone",
+      image: "/images/work-2.jpg", href: "https://bridgeai-einf.onrender.com",
+      categories: ["Mobile Apps", "AI & Automation"],
+    },
+    {
+      name: "ChiefFlow AI", tagline: "SME Business Assistant", kind: "Web App", icon: "globe",
+      image: "/images/work-3.jpg", href: "",
+      categories: ["Web Apps", "AI & Automation"],
+    },
   ],
 };
 
@@ -53,25 +72,30 @@ export const caseStudy = {
   name: "WingBM",
   subtitle: "Smart Business Management for Growing Businesses",
   body: ["A powerful PWA for sales, inventory,", "expenses and business insights."],
-  cta: "Explore Case Study",
+  cta: { label: "Explore Case Study", href: "https://wingbm.vercel.app/" },
   highlights: ["PWA · Offline Ready", "Real-time Analytics", "Multi-device Support"],
-  demo: { label: "View Live Demo", href: "#" },
+  demo: { label: "View Live Demo", href: "https://wingbm.vercel.app/" },
   github: { label: "View on GitHub", href: "https://github.com/techwokx-cloud" },
 };
 
 export const stack = {
   eyebrow: "TECH STACK",
   body: ["A blend of proven technologies and", "cutting-edge AI tools."],
-  items: ["Next.js", "React", "Node.js", "Python", "Docker", "Linux", "AI/LLM"],
-  cta: { eyebrow: "LET'S TALK", body: ["Have an interesting project or", "technical challenge?"], button: "Send Message", href: "mailto:george.jabley@gmail.com" },
+  // Row 1 matches the mockup; row 2 is tooling used across George's projects.
+  items: [
+    "Next.js", "React", "Node.js", "Python", "Docker", "Linux", "AI/LLM",
+    "TypeScript", "Tailwind CSS", "Supabase", "OpenAI API", "Vercel", "Render", "GitHub",
+  ],
+  cta: { eyebrow: "LET'S TALK", body: ["Have an interesting project or", "technical challenge?"], button: "Send Message" },
 };
 
 export const footer = {
   tagline: "Senior IT Consultant · Full-Stack Developer · AI Builder",
   copyright: "© 2026 George Jabley. All rights reserved.",
+  // Empty href = icon is shown but not clickable until a real profile URL is supplied.
   social: [
     { label: "GitHub", href: "https://github.com/techwokx-cloud", icon: "github" },
-    { label: "LinkedIn", href: "#", icon: "linkedin" },
-    { label: "YouTube", href: "#", icon: "youtube" },
+    { label: "LinkedIn", href: "", icon: "linkedin" },
+    { label: "YouTube", href: "", icon: "youtube" },
   ],
 };
