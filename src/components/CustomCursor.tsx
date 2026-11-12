@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { reduced } from "../lib/motion";
 
 /**
  * Desktop-only cursor: small dot + lagging ring. The ring turns into a labelled
@@ -16,7 +17,7 @@ export default function CustomCursor() {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     if (!fine) return;
     const root = document.documentElement;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = reduced();
     root.classList.add("has-cursor");
 
     let x = -100, y = -100, rx = -100, ry = -100, raf = 0;

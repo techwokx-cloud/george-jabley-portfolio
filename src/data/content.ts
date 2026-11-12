@@ -11,7 +11,7 @@ export const site = {
 export const nav = [
   { label: "Home", href: "#home" },
   { label: "About", href: "#about" },
-  { label: "Experience", href: "#experience" },
+  { label: "Experience", href: "#journey" },
   { label: "Work", href: "#work" },
   { label: "Tech Stack", href: "#stack" },
   { label: "Contact", href: "#contact" },
@@ -20,7 +20,7 @@ export const nav = [
 export const hero = {
   eyebrow: "HI, I'M GEORGE JABLEY",
   lines: ["Technology enthusiast.", "Problem solver."],
-  accent: "Developer.",
+  accent: "Junior AI Software Developer.",
   sub: ["25+ years in technology. 16+ years in IT support.", "A new chapter in software development and AI."],
   status: "Available for remote opportunities",
 };
@@ -38,10 +38,9 @@ export const about = {
   toolkit: ["Next.js", "Docker", "TypeScript", "Linux", "Node.js", "AI/LLM", "Python", "Cloud"],
 };
 
-// Set this to the address you want published on the site (visible to everyone).
-// While empty, the contact button scrolls to the contact block instead of opening a mail app.
+// WhatsApp number in international format, digits only (no +).
 export const contact = {
-  email: "",
+  whatsapp: "233264375628",
 };
 
 export const work = {

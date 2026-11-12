@@ -1,16 +1,14 @@
 import { ArrowRight } from "lucide-react";
-import { stack, contact } from "../data/content";
+import { stack } from "../data/content";
 import { toolIcon } from "../lib/icons";
 
 export default function Stack() {
-  const href = contact.email ? `mailto:${contact.email}` : "#contact";
   return (
-    <section id="stack" className="stack">
+    <section id="stack" className="stack" data-section>
       <div className="eyebrow" data-reveal>{stack.eyebrow}</div>
-      <h2 className="h2" data-reveal style={{ ["--d" as string]: "0.08s" }}>
-        Modern tools<span className="o">.</span>
-        <br />
-        Real impact<span className="o">.</span>
+      <h2 className="h2" data-lines>
+        <span className="ln"><span>Modern tools<span className="o">.</span></span></span>
+        <span className="ln"><span style={{ ["--d" as string]: "0.12s" }}>Real impact<span className="o">.</span></span></span>
       </h2>
       <p className="p" data-reveal style={{ ["--d" as string]: "0.16s" }}>
         {stack.body[0]}
@@ -39,9 +37,9 @@ export default function Stack() {
           <br />
           {stack.cta.body[1]}
         </p>
-        <a href={href} className="btn">
+        <button type="button" data-contact className="btn">
           {stack.cta.button} <ArrowRight />
-        </a>
+        </button>
       </div>
     </section>
   );

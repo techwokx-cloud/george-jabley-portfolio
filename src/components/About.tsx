@@ -8,23 +8,21 @@ const statLeft = [384, 505, 626];
 
 export default function About() {
   return (
-    <section id="about" className="about">
+    <section id="about" className="about" data-section>
       <div className="eyebrow" data-reveal>{about.eyebrow}</div>
       <div className="wm" aria-hidden>
         GJ.
       </div>
-      <h2 className="h2" data-reveal style={{ ["--d" as string]: "0.08s" }}>
-        {about.title[0]}
-        <br />
-        {about.title[1]}
-        <span className="o">.</span>
+      <h2 className="h2" data-lines>
+        <span className="ln"><span>{about.title[0]}</span></span>
+        <span className="ln"><span style={{ ["--d" as string]: "0.12s" }}>{about.title[1]}<span className="o">.</span></span></span>
       </h2>
       <p className="p" data-reveal style={{ ["--d" as string]: "0.16s" }}>
         {about.body[0]}
         <br />
         {about.body[1]}
       </p>
-      <a href="#experience" className="more" data-reveal style={{ ["--d" as string]: "0.24s" }}>
+      <a href="#journey" className="more" data-reveal style={{ ["--d" as string]: "0.24s" }}>
         {about.link} <ArrowRight />
       </a>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { reduced } from "../lib/motion";
 
 /** Counts up once when scrolled into view. Screen readers get the final value only. */
 export default function Counter({ to, prefix = "", suffix = "", duration = 1400 }: { to: number; prefix?: string; suffix?: string; duration?: number }) {
@@ -10,7 +11,7 @@ export default function Counter({ to, prefix = "", suffix = "", duration = 1400 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (reduced()) return;
     setN(0);
     let raf = 0;
     const io = new IntersectionObserver(

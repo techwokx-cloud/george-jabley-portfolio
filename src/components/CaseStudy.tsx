@@ -1,44 +1,78 @@
 import { ArrowRight, Check } from "lucide-react";
-import { caseStudy as c } from "../data/content";
 import { Social } from "../lib/icons";
+import type { Project } from "../lib/projects";
 
-export default function CaseStudy() {
+const initials = (n: string) =>
+  n.replace(/[^A-Za-z0-9 ]/g, " ").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+
+export default function CaseStudy({ project: c, week }: { project: Project | null; week: number }) {
+  if (!c) return null;
+  const long = c.name.length > 12;
+  const shot = c.caseImage || c.image;
   return (
-    <section id="case-study" className="case">
-      <div className="eyebrow noline" data-reveal>{c.eyebrow}</div>
-      <h2 data-reveal style={{ ["--d" as string]: "0.08s" }}>{c.name}</h2>
-      <p className="sub" data-reveal style={{ ["--d" as string]: "0.16s" }}>
-        Smart Business Management
-        <br />
-        for Growing Businesses<span className="o">.</span>
-      </p>
-      <p className="p" data-reveal style={{ ["--d" as string]: "0.24s" }}>
-        {c.body[0]}
-        <br />
-        {c.body[1]}
-      </p>
-      <a href={c.cta.href} className="btn" target="_blank" rel="noopener noreferrer" data-reveal style={{ ["--d" as string]: "0.32s" }}>
-        {c.cta.label} <ArrowRight />
-      </a>
+    <section id="case-study" className="case" data-section>
+      <div className="left" key={c.id}>
+        <div className="eyebrow noline" data-reveal>
+          FEATURED CASE STUDY <span className="chip" title={`Rotates every Monday · week ${week}`}>This week</span>
+        </div>
+        <h2 className={long ? "long" : undefined} data-reveal style={{ ["--d" as string]: "0.08s" }}>{c.name}</h2>
+        {c.headline && (
+          <p className="sub" data-reveal style={{ ["--d" as string]: "0.16s" }}>
+            {c.headline}
+            <span className="o">.</span>
+          </p>
+        )}
+        {c.description && (
+          <p className="p" data-reveal style={{ ["--d" as string]: "0.24s" }}>{c.description}</p>
+        )}
+        {c.url && (
+          <a href={c.url} className="btn" target="_blank" rel="noopener noreferrer" data-reveal style={{ ["--d" as string]: "0.32s" }}>
+            Explore Case Study <ArrowRight />
+          </a>
+        )}
+      </div>
 
-      <a href={c.demo.href} className="case-img" data-reveal="img" data-cursor="View Live" target="_blank" rel="noopener noreferrer" aria-label="Open the WingBM live demo (dashboard on laptop and phone)" />
+      {(() => {
+        const cls = `case-img${c.caseImage ? "" : shot ? " shot" : " type"}`;
+        const style = shot ? { backgroundImage: `url(${shot})` } : undefined;
+        const inner = !shot ? <b>{initials(c.name)}</b> : null;
+        return c.url ? (
+          <a href={c.url} className={cls} style={style} data-reveal="img" data-cursor="View Live" target="_blank" rel="noopener noreferrer" aria-label={`Open ${c.name}`}>
+            {inner}
+          </a>
+        ) : (
+          <div className={cls} style={style} data-reveal="img" role="img" aria-label={c.name}>
+            {inner}
+          </div>
+        );
+      })()}
 
       <aside className="hl" data-reveal style={{ ["--d" as string]: "0.3s" }}>
         <h3>PROJECT HIGHLIGHTS</h3>
         <ul>
-          {c.highlights.map((h) => (
+          {c.highlights.slice(0, 3).map((h) => (
             <li key={h}>
               <Check /> {h}
             </li>
           ))}
+          <li className="st">
+            <i className={`dot2 s-${c.status.replace(/\s+/g, "").toLowerCase()}`} /> {c.status}
+            {c.period ? ` · ${c.period}` : ""}
+          </li>
         </ul>
         <div className="links">
-          <a href={c.demo.href} target="_blank" rel="noopener noreferrer">
-            {c.demo.label} <ArrowRight />
-          </a>
-          <a href={c.github.href} className="gh" target="_blank" rel="noopener noreferrer">
-            <Social icon="github" size={17} /> {c.github.label}
-          </a>
+          {c.url ? (
+            <a href={c.url} target="_blank" rel="noopener noreferrer">
+              View Live Demo <ArrowRight />
+            </a>
+          ) : (
+            <span className="muted">No public link yet</span>
+          )}
+          {c.github && (
+            <a href={c.github} className="gh" target="_blank" rel="noopener noreferrer">
+              <Social icon="github" size={17} /> View on GitHub
+            </a>
+          )}
         </div>
       </aside>
     </section>

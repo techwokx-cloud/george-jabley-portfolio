@@ -1,5 +1,6 @@
 import { footer, site } from "../data/content";
 import { Social } from "../lib/icons";
+import MotionToggle from "./MotionToggle";
 
 export default function Footer() {
   return (
@@ -24,6 +25,7 @@ export default function Footer() {
         )}
       </div>
       <div className="copy2">{footer.copyright}</div>
+      <MotionToggle />
     </footer>
   );
 }

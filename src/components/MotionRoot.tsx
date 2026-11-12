@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reduced } from "../lib/motion";
 
 /**
  * Drives CSS-based motion:
@@ -12,7 +13,7 @@ import { useEffect } from "react";
 export default function MotionRoot() {
   useEffect(() => {
     const root = document.documentElement;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = reduced();
 
     const show = (el: Element) => {
       el.setAttribute("data-in", "");
@@ -24,7 +25,7 @@ export default function MotionRoot() {
     const revealHero = () => heroEls().forEach(show);
 
     if (reduce) {
-      document.querySelectorAll("[data-reveal],[data-hero]").forEach((el) => el.setAttribute("data-in", ""));
+      document.querySelectorAll("[data-reveal],[data-hero],[data-lines],[data-gate],[data-section]").forEach((el) => el.setAttribute("data-in", ""));
       return;
     }
 
@@ -51,7 +52,7 @@ export default function MotionRoot() {
       },
       { threshold: 0.12, rootMargin: "0px 0px -6% 0px" }
     );
-    document.querySelectorAll("[data-reveal]").forEach((el) => io.observe(el));
+    document.querySelectorAll("[data-reveal],[data-lines],[data-gate],[data-section]").forEach((el) => io.observe(el));
 
     // failsafe: never leave content hidden
     const t = window.setTimeout(() => {

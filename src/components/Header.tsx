@@ -8,7 +8,7 @@ const navX = [8, 69, 124, 202, 253, 327]; // text x-offsets from the nav origin 
 const widths = [28, 26, 47, 24, 47, 33];  // approximate link widths for the first paint
 
 // Which nav item each page region highlights (Experience shares the About region)
-const spy: Record<string, string> = { home: "#home", about: "#about", work: "#work", "case-study": "#work", stack: "#stack" };
+const spy: Record<string, string> = { home: "#home", about: "#about", journey: "#journey", work: "#work", "case-study": "#work", stack: "#stack" };
 
 export default function Header() {
   const [active, setActive] = useState("#home");
@@ -69,7 +69,7 @@ export default function Header() {
           <Moon />
           <small>●</small>
         </button>
-        <a href="#contact" className="talk">
+        <a href="#contact" data-contact className="talk">
           Let&apos;s Talk <ArrowRight />
         </a>
       </div>
