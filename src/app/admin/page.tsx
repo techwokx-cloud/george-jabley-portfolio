@@ -40,6 +40,14 @@ export default function Admin() {
   const [msg, setMsg] = useState<{ t: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [tab, setTab] = useState<"projects" | "creds">("projects");
+  const [q, setQ] = useState("");
+  const [fs, setFs] = useState("All");
+
+  useEffect(() => {
+    if (!msg) return;
+    const t = window.setTimeout(() => setMsg(null), 5000);
+    return () => window.clearTimeout(t);
+  }, [msg]);
 
   useEffect(() => {
     if (!supabase) return setReady(true);
@@ -64,13 +72,13 @@ export default function Admin() {
 
   const featured = useMemo(() => featuredFor(projects), [projects]);
 
-  if (!ready) return <div className="wrap muted">Loading…</div>;
+  if (!ready) return <div className="a-wrap a-muted">Loading…</div>;
 
   if (!supabase) {
     return (
-      <div className="wrap">
+      <div className="a-wrap">
         <h1>Admin<i>.</i></h1>
-        <div className="card note" style={{ marginTop: 18 }}>
+        <div className="a-card a-note" style={{ marginTop: 18 }}>
           <b>Supabase isn&apos;t configured yet.</b> Add <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
           <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> (locally in <code>.env.local</code> and in Vercel → Settings → Environment
           Variables), then redeploy. See <code>SETUP-ADMIN.md</code>. Until then the site shows its built-in starter projects.
@@ -137,38 +145,53 @@ export default function Admin() {
   const set = <K extends keyof Project>(k: K, v: Project[K]) => setForm((f) => (f ? { ...f, [k]: v } : f));
 
   return (
-    <div className="wrap">
-      <header className="top">
-        <h1>Admin<i>.</i></h1>
-        <div className="row">
-          <span className="muted">{session.user.email}</span>
+    <div className="a-wrap">
+      <header className="a-top">
+        <div className="a-brand"><h1>Admin<i>.</i></h1><span className="a-sub">Portfolio dashboard</span></div>
+        <div className="a-row">
+          <a className="a-link" href="/" target="_blank" rel="noopener noreferrer">View site ↗</a>
+          <span className="a-muted a-email">{session.user.email}</span>
           <button onClick={() => supabase!.auth.signOut()}>Sign out</button>
         </div>
       </header>
 
-      <div className="row" style={{ margin: "0 0 14px" }}>
-        <button className={tab === "projects" ? "primary" : ""} onClick={() => setTab("projects")}>Projects</button>
-        <button className={tab === "creds" ? "primary" : ""} onClick={() => setTab("creds")}>Certificates &amp; Resume</button>
-      </div>
+      <nav className="a-tabs">
+        <button className={tab === "projects" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("projects")}>Projects <em>{projects.length}</em></button>
+        <button className={tab === "creds" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("creds")}>Certificates &amp; Resume</button>
+      </nav>
+
+      {tab === "projects" && !form && (
+        <div className="a-stats">
+          <div><b>{projects.length}</b><span>Projects</span></div>
+          <div><b>{projects.filter((p) => p.status === "Live").length}</b><span>Live</span></div>
+          <div><b>{projects.filter((p) => p.url).length}</b><span>With a link</span></div>
+          <div className="wide"><b>{featured ? featured.name : "—"}</b><span>Featured this week · week {weekNumber()}</span></div>
+        </div>
+      )}
 
       {tab === "creds" && <CredAdmin />}
-      {tab === "projects" && msg && <div className={msg.t === "ok" ? "ok" : "err"}>{msg.text}</div>}
+      {tab === "projects" && msg && <div className={`a-toast ${msg.t === "ok" ? "a-ok" : "a-err"}`}>{msg.text}</div>}
 
       {tab === "projects" && !form && (
         <>
-          <div className="card">
-            <div className="row" style={{ justifyContent: "space-between" }}>
+          <div className="a-card">
+            <div className="a-row" style={{ justifyContent: "space-between" }}>
               <div>
                 <h2 style={{ margin: 0 }}>Projects ({projects.length})</h2>
-                <div className="muted">
+                <div className="a-muted">
                   Featured this week (week {weekNumber()}): <b>{featured ? featured.name : "—"}</b>
                   {projects.some((p) => p.pinned) ? " · pinned" : " · rotates every Monday through projects marked ★"}
                 </div>
               </div>
-              <div className="row">
+              <div className="a-row a-tools">
+                <input type="text" className="a-search" placeholder="Search projects…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <select className="a-fsel" value={fs} onChange={(e) => setFs(e.target.value)}>
+                  <option>All</option>
+                  {STATUSES.map((x) => <option key={x}>{x}</option>)}
+                </select>
                 {projects.length === 0 && <button onClick={importSeed}>Import starter projects</button>}
                 <button
-                  className="primary"
+                  className="a-primary"
                   onClick={() => {
                     setForm(blank((projects.at(-1)?.sort ?? 0) + 1));
                     setIsNew(true);
@@ -181,33 +204,33 @@ export default function Admin() {
             </div>
           </div>
 
-          <div className="card" style={{ padding: 0, overflowX: "auto" }}>
+          <div className="a-card" style={{ padding: 0, overflowX: "auto" }}>
             <table>
               <thead>
                 <tr><th></th><th>Project</th><th>Status</th><th>Link</th><th>Featured pool</th><th></th></tr>
               </thead>
               <tbody>
-                {projects.map((p) => (
+                {projects.filter((p) => (fs === "All" || p.status === fs) && `${p.name} ${p.tagline} ${p.kind}`.toLowerCase().includes(q.toLowerCase())).map((p) => (
                   <tr key={p.id}>
-                    <td><span className="thumb" style={p.image ? { backgroundImage: `url(${p.image})` } : undefined} /></td>
+                    <td><span className="a-thumb" style={p.image ? { backgroundImage: `url(${p.image})` } : undefined} /></td>
                     <td>
                       <b>{p.name}</b>{" "}
-                      {featured?.id === p.id && <span className="pill star">This week</span>}
-                      <div className="muted">{p.tagline} · {p.kind}</div>
+                      {featured?.id === p.id && <span className="a-pill a-star">This week</span>}
+                      <div className="a-muted">{p.tagline} · {p.kind}</div>
                     </td>
-                    <td><span className={`pill${p.status === "Live" ? " live" : ""}`}>{p.status}</span></td>
-                    <td className="muted">{p.url ? "yes" : "none"}</td>
+                    <td><span className={`a-pill${p.status === "Live" ? " a-live" : ""}`}>{p.status}</span></td>
+                    <td className="a-muted">{p.url ? "yes" : "none"}</td>
                     <td><input type="checkbox" checked={p.featuredPool} onChange={() => togglePool(p)} aria-label={`${p.name} in featured pool`} /></td>
                     <td>
-                      <div className="row" style={{ justifyContent: "flex-end" }}>
+                      <div className="a-row" style={{ justifyContent: "flex-end" }}>
                         <button onClick={() => { setForm(p); setIsNew(false); setMsg(null); }}>Edit</button>
-                        <button className="danger" onClick={() => remove(p)}>Delete</button>
+                        <button className="a-danger" onClick={() => remove(p)}>Delete</button>
                       </div>
                     </td>
                   </tr>
                 ))}
                 {projects.length === 0 && (
-                  <tr><td colSpan={6} className="muted" style={{ padding: 24 }}>No projects yet. Import the starter set or add your first one.</td></tr>
+                  <tr><td colSpan={6} className="a-muted" style={{ padding: 24 }}>No projects yet. Import the starter set or add your first one.</td></tr>
                 )}
               </tbody>
             </table>
@@ -216,13 +239,13 @@ export default function Admin() {
       )}
 
       {tab === "projects" && form && (
-        <div className="card">
+        <div className="a-card">
           <h2>{isNew ? "New project" : `Edit · ${form.name}`}</h2>
-          <div className="grid">
+          <div className="a-grid">
             <div><label>Name *</label><input type="text" value={form.name} onChange={(e) => set("name", e.target.value)} /></div>
             <div><label>Card subtitle (short)</label><input type="text" value={form.tagline} onChange={(e) => set("tagline", e.target.value)} placeholder="Business Management Platform" /></div>
-            <div className="full"><label>Short description</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="2–3 lines. Only describe what is verified." /></div>
-            <div className="full"><label>Featured headline (longer line used when this project is featured)</label><input type="text" value={form.headline} onChange={(e) => set("headline", e.target.value)} /></div>
+            <div className="a-full"><label>Short description</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} placeholder="2–3 lines. Only describe what is verified." /></div>
+            <div className="a-full"><label>Featured headline (longer line used when this project is featured)</label><input type="text" value={form.headline} onChange={(e) => set("headline", e.target.value)} /></div>
             <div>
               <label>Type</label>
               <select value={form.kind} onChange={(e) => set("kind", e.target.value)}>
@@ -235,9 +258,9 @@ export default function Admin() {
                 {STATUSES.map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
-            <div className="full">
+            <div className="a-full">
               <label>Categories (used by the filters)</label>
-              <div className="checks">
+              <div className="a-checks">
                 {CATEGORIES.map((c) => (
                   <label key={c}>
                     <input type="checkbox" checked={form.categories.includes(c)} onChange={(e) => set("categories", e.target.checked ? [...form.categories, c] : form.categories.filter((x) => x !== c))} />
@@ -250,9 +273,9 @@ export default function Admin() {
             <div><label>Source code URL (optional)</label><input type="text" value={form.github} onChange={(e) => set("github", e.target.value)} placeholder="https://github.com/…" /></div>
             <div><label>Period (optional, e.g. “Aug 2026” — feeds the timeline)</label><input type="text" value={form.period} onChange={(e) => set("period", e.target.value)} /></div>
             <div><label>Display order (lower = earlier)</label><input type="number" value={form.sort} onChange={(e) => set("sort", Number(e.target.value))} /></div>
-            <div className="full"><label>Highlights for the featured section (one per line, max 3)</label>
+            <div className="a-full"><label>Highlights for the featured section (one per line, max 3)</label>
               <textarea value={form.highlights.join("\n")} onChange={(e) => set("highlights", e.target.value.split("\n"))} /></div>
-            <div className="full checks">
+            <div className="a-full a-checks">
               <label><input type="checkbox" checked={form.featuredPool} onChange={(e) => set("featuredPool", e.target.checked)} /> ★ Include in the weekly featured rotation</label>
               <label><input type="checkbox" checked={form.pinned} onChange={(e) => set("pinned", e.target.checked)} /> Pin as featured now (overrides rotation)</label>
             </div>
@@ -260,17 +283,17 @@ export default function Admin() {
               <label>Card image (real screenshot)</label>
               <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], "image")} />
               <input type="text" value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="or paste an image URL" style={{ marginTop: 6 }} />
-              {form.image && <div className="preview" style={{ backgroundImage: `url(${form.image})` }} />}
+              {form.image && <div className="a-preview" style={{ backgroundImage: `url(${form.image})` }} />}
             </div>
             <div>
               <label>Featured-section image (optional wide image)</label>
               <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0], "caseImage")} />
               <input type="text" value={form.caseImage} onChange={(e) => set("caseImage", e.target.value)} placeholder="falls back to the card image" style={{ marginTop: 6 }} />
-              {form.caseImage && <div className="preview" style={{ backgroundImage: `url(${form.caseImage})` }} />}
+              {form.caseImage && <div className="a-preview" style={{ backgroundImage: `url(${form.caseImage})` }} />}
             </div>
           </div>
-          <div className="row" style={{ marginTop: 18 }}>
-            <button className="primary" onClick={save} disabled={busy}>{busy ? "Working…" : "Save project"}</button>
+          <div className="a-row" style={{ marginTop: 18 }}>
+            <button className="a-primary" onClick={save} disabled={busy}>{busy ? "Working…" : "Save project"}</button>
             <button onClick={() => setForm(null)} disabled={busy}>Cancel</button>
           </div>
         </div>
@@ -285,10 +308,10 @@ function Login() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   return (
-    <div className="login">
+    <div className="a-login">
       <h1 style={{ textAlign: "center", marginBottom: 14 }}>Admin<i>.</i></h1>
       <form
-        className="card"
+        className="a-card"
         onSubmit={async (e) => {
           e.preventDefault();
           setBusy(true);
@@ -298,10 +321,10 @@ function Login() {
           if (error) setErr(error.message);
         }}
       >
-        {err && <div className="err">{err}</div>}
+        {err && <div className="a-err">{err}</div>}
         <div style={{ marginBottom: 12 }}><label>Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></div>
         <div style={{ marginBottom: 16 }}><label>Password</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required /></div>
-        <button className="primary" style={{ width: "100%" }} disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
+        <button className="a-primary" style={{ width: "100%" }} disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button>
       </form>
     </div>
   );

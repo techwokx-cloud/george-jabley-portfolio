@@ -100,11 +100,11 @@ export default function CredAdmin() {
 
   return (
     <>
-      {msg && <div className={msg.t === "ok" ? "ok" : "err"}>{msg.text}</div>}
+      {msg && <div className={`a-toast ${msg.t === "ok" ? "a-ok" : "a-err"}`}>{msg.text}</div>}
 
-      <div className="card">
+      <div className="a-card">
         <h2 style={{ margin: 0 }}>Resume (PDF)</h2>
-        <div className="muted" style={{ margin: "4px 0 10px" }}>
+        <div className="a-muted" style={{ margin: "4px 0 10px" }}>
           Current: {resume ? <a href={resume} target="_blank" rel="noreferrer">{resume.split("/").pop()}</a> : "using the built-in starter resume"}
         </div>
         <input type="file" accept="application/pdf" onChange={(e) => e.target.files?.[0] && uploadResume(e.target.files[0])} disabled={busy} />
@@ -112,35 +112,35 @@ export default function CredAdmin() {
 
       {!form && (
         <>
-          <div className="card">
-            <div className="row" style={{ justifyContent: "space-between" }}>
+          <div className="a-card">
+            <div className="a-row" style={{ justifyContent: "space-between" }}>
               <div>
                 <h2 style={{ margin: 0 }}>Certificates, hackathons &amp; events ({items.length})</h2>
-                <div className="muted">Shown as a sliding card carousel on the site, in display order.</div>
+                <div className="a-muted">Shown as a sliding card carousel on the site, in display order.</div>
               </div>
-              <div className="row">
+              <div className="a-row">
                 {items.length === 0 && <button onClick={importSeed}>Import starter entries</button>}
-                <button className="primary" onClick={() => { setForm(blank((items.at(-1)?.sort ?? 0) + 1)); setIsNew(true); setMsg(null); }}>+ Add</button>
+                <button className="a-primary" onClick={() => { setForm(blank((items.at(-1)?.sort ?? 0) + 1)); setIsNew(true); setMsg(null); }}>+ Add</button>
               </div>
             </div>
           </div>
-          <div className="card" style={{ padding: 0, overflowX: "auto" }}>
+          <div className="a-card" style={{ padding: 0, overflowX: "auto" }}>
             <table>
               <thead><tr><th></th><th>Title</th><th>Type</th><th>Date</th><th></th></tr></thead>
               <tbody>
                 {items.map((c) => (
                   <tr key={c.id}>
-                    <td><span className="thumb" style={c.image ? { backgroundImage: `url(${c.image})` } : undefined} /></td>
-                    <td><b>{c.title}</b><div className="muted">{c.issuer}</div></td>
-                    <td><span className="pill">{c.kind}</span></td>
-                    <td className="muted">{c.date || "—"}</td>
-                    <td><div className="row" style={{ justifyContent: "flex-end" }}>
+                    <td><span className="a-thumb" style={c.image ? { backgroundImage: `url(${c.image})` } : undefined} /></td>
+                    <td><b>{c.title}</b><div className="a-muted">{c.issuer}</div></td>
+                    <td><span className="a-pill">{c.kind}</span></td>
+                    <td className="a-muted">{c.date || "—"}</td>
+                    <td><div className="a-row" style={{ justifyContent: "flex-end" }}>
                       <button onClick={() => { setForm(c); setIsNew(false); setMsg(null); }}>Edit</button>
-                      <button className="danger" onClick={() => remove(c)}>Delete</button>
+                      <button className="a-danger" onClick={() => remove(c)}>Delete</button>
                     </div></td>
                   </tr>
                 ))}
-                {items.length === 0 && <tr><td colSpan={5} className="muted" style={{ padding: 24 }}>Nothing yet. Import the starter entries or add your first one.</td></tr>}
+                {items.length === 0 && <tr><td colSpan={5} className="a-muted" style={{ padding: 24 }}>Nothing yet. Import the starter entries or add your first one.</td></tr>}
               </tbody>
             </table>
           </div>
@@ -148,25 +148,25 @@ export default function CredAdmin() {
       )}
 
       {form && (
-        <div className="card">
+        <div className="a-card">
           <h2>{isNew ? "Add entry" : `Edit · ${form.title}`}</h2>
-          <div className="grid">
+          <div className="a-grid">
             <div><label>Title *</label><input type="text" value={form.title} onChange={(e) => set("title", e.target.value)} /></div>
             <div><label>Issuer / organiser</label><input type="text" value={form.issuer} onChange={(e) => set("issuer", e.target.value)} /></div>
             <div><label>Type</label><select value={form.kind} onChange={(e) => set("kind", e.target.value)}>{CRED_KINDS.map((k) => <option key={k}>{k}</option>)}</select></div>
             <div><label>Date (free text, e.g. “Oct 2026”)</label><input type="text" value={form.date} onChange={(e) => set("date", e.target.value)} /></div>
-            <div className="full"><label>Short description (optional)</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
+            <div className="a-full"><label>Short description (optional)</label><textarea value={form.description} onChange={(e) => set("description", e.target.value)} /></div>
             <div><label>Link (optional — verification or event page)</label><input type="text" value={form.url} onChange={(e) => set("url", e.target.value)} placeholder="https://…" /></div>
             <div><label>Display order</label><input type="number" value={form.sort} onChange={(e) => set("sort", Number(e.target.value))} /></div>
-            <div className="full">
+            <div className="a-full">
               <label>Certificate image / photo</label>
               <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0])} />
               <input type="text" value={form.image} onChange={(e) => set("image", e.target.value)} placeholder="or paste an image URL" style={{ marginTop: 6 }} />
-              {form.image && <div className="preview" style={{ backgroundImage: `url(${form.image})` }} />}
+              {form.image && <div className="a-preview" style={{ backgroundImage: `url(${form.image})` }} />}
             </div>
           </div>
-          <div className="row" style={{ marginTop: 18 }}>
-            <button className="primary" onClick={save} disabled={busy}>{busy ? "Working…" : "Save"}</button>
+          <div className="a-row" style={{ marginTop: 18 }}>
+            <button className="a-primary" onClick={save} disabled={busy}>{busy ? "Working…" : "Save"}</button>
             <button onClick={() => setForm(null)} disabled={busy}>Cancel</button>
           </div>
         </div>
