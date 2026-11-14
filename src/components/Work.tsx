@@ -1,13 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, ArrowRight, ArrowUpRight, Globe, Smartphone, Monitor, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRight, ArrowUpRight, Globe, Smartphone, Monitor, Sparkles, Pause, Play } from "lucide-react";
 import { work } from "../data/content";
 import type { Project } from "../lib/projects";
-import { reduced } from "../lib/motion";
 
-const STEP = 960;   // page (3×304 + 2×16 = 944) + gap (16)
-const PAGE = 6;     // 3 columns × 2 rows
+const SHOW = 3;     // cards that fit across one row (3×304 + 2×16 = 944)
 const FILTER_W = [80, 84, 72, 108, 96, 80, 88];
 const FILTERS = [...work.filters, "Client Websites"];
 
@@ -25,71 +23,26 @@ function KindIcon({ kind }: { kind: string }) {
 
 export default function Work({ projects }: { projects: Project[] }) {
   const [active, setActive] = useState("All Projects");
-  const [index, setIndex] = useState(0);
-  const [drag, setDrag] = useState(0);
-  const [dragging, setDragging] = useState(false);
   const [paused, setPaused] = useState(false);
   const [inView, setInView] = useState(false);
   const root = useRef<HTMLDivElement>(null);
-  const start = useRef<{ x: number; moved: boolean } | null>(null);
 
   const list = useMemo(
     () => projects.filter((p) => active === "All Projects" || p.categories.includes(active)),
     [projects, active]
   );
-  const pages = useMemo(() => {
-    const out: Project[][] = [];
-    for (let i = 0; i < list.length; i += PAGE) out.push(list.slice(i, i + PAGE));
-    return out;
-  }, [list]);
-  const max = Math.max(0, pages.length - 1);
-  const go = useCallback((i: number) => setIndex(Math.min(Math.max(i, 0), max)), [max]);
-
-  // reset position when the filter changes
-  useEffect(() => setIndex(0), [active]);
-
-  // autoplay: one page (6 cards) at a time, loops; pauses on hover/focus/drag/hidden tab/offscreen
-  useEffect(() => {
-    if (paused || dragging || !inView || max === 0) return;
-    if (reduced()) return;
-    const t = window.setInterval(() => setIndex((i) => (i >= max ? 0 : i + 1)), 4200);
-    return () => window.clearInterval(t);
-  }, [paused, dragging, inView, max]);
+  // top row = 1st, 3rd, 5th…  bottom row = 2nd, 4th, 6th…
+  const rows = useMemo(() => [list.filter((_, i) => i % 2 === 0), list.filter((_, i) => i % 2 === 1)], [list]);
 
   useEffect(() => {
     const el = root.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.35 });
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.2 });
     io.observe(el);
     return () => io.disconnect();
   }, []);
 
-  // pointer drag / swipe
-  const down = (e: React.PointerEvent) => {
-    if (e.pointerType === "mouse" && e.button !== 0) return;
-    start.current = { x: e.clientX, moved: false };
-    setDragging(true);
-  };
-  const move = (e: React.PointerEvent) => {
-    if (!start.current) return;
-    const dx = e.clientX - start.current.x;
-    if (Math.abs(dx) > 6) start.current.moved = true;
-    setDrag(dx);
-  };
-  const up = () => {
-    if (!start.current) return;
-    const dx = drag;
-    start.current.moved = start.current.moved && Math.abs(dx) > 6;
-    setDragging(false);
-    setDrag(0);
-    if (Math.abs(dx) > 50) go(index + (dx < 0 ? 1 : -1));
-    window.setTimeout(() => (start.current = null), 0);
-  };
-  const swallowClick = (e: React.MouseEvent) => {
-    if (start.current?.moved) e.preventDefault();
-  };
-
-  const renderCard = (p: Project, i: number) => {
+  const renderCard = (p: Project, i: number, copy = false) => {
     const h = hue(p.id);
     const body = (
       <>
@@ -124,20 +77,19 @@ export default function Work({ projects }: { projects: Project[] }) {
       style: { ["--e" as string]: `${i * 0.08}s` },
       "aria-label": `${p.name} — ${p.tagline}, ${p.status}${p.url ? " (opens in a new tab)" : " (no public link yet)"}`,
       draggable: false,
+      ...(copy ? { "aria-hidden": true, tabIndex: -1 } : {}),
     } as const;
     return p.url ? (
-      <a key={p.id} href={p.url} target="_blank" rel="noopener noreferrer" data-cursor="View Project" {...common}>
+      <a key={p.id + (copy ? "-c" : "")} href={p.url} target="_blank" rel="noopener noreferrer" data-cursor="View Project" {...common}>
         {body}
       </a>
     ) : (
-      <div key={p.id} data-cursor={p.status === "Live" ? "" : p.status} {...common}>
+      <div key={p.id + (copy ? "-c" : "")} data-cursor={p.status === "Live" ? "" : p.status} {...common}>
         {body}
       </div>
     );
   };
 
-  const from = index * PAGE + 1;
-  const shownTo = Math.min((index + 1) * PAGE, list.length);
 
   return (
     <section id="work" className="work" data-section>
@@ -166,60 +118,47 @@ export default function Work({ projects }: { projects: Project[] }) {
 
       <div
         ref={root}
-        className="carousel"
+        className={`carousel${paused ? " paused" : ""}${inView ? " in-view" : ""}`}
         data-gate
         role="region"
         aria-roledescription="carousel"
         aria-label="Selected projects"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onFocusCapture={() => setPaused(true)}
-        onBlurCapture={() => setPaused(false)}
       >
-        <div
-          className={`rows${dragging ? " dragging" : ""}`}
-          onPointerDown={down}
-          onPointerMove={move}
-          onPointerUp={up}
-          onPointerCancel={up}
-          onPointerLeave={() => dragging && up()}
-          onClickCapture={swallowClick}
-        >
-          {[0, 1].map((row) => (
-            <div className="viewport" key={row} data-row={row}>
-              <div
-                className="track"
-                key={active}
-                style={{
-                  transform: `translate3d(${-index * STEP + drag}px,0,0)`,
-                  // the bottom row follows the top row a beat later
-                  transitionDelay: dragging ? "0s" : row ? "0.4s" : "0s",
-                  transition: dragging ? "none" : undefined,
-                }}
-              >
-                {pages.map((pg, pi) => (
-                  <div className="page" key={pi}>
-                    {pg.slice(row * 3, row * 3 + 3).map((p, i) => renderCard(p, i + row * 3))}
-                  </div>
-                ))}
-                {list.length === 0 && row === 0 && <p className="empty">No projects in this category yet.</p>}
+        <div className="rows" key={active}>
+          {rows.map((row, ri) => {
+            const loop = row.length > SHOW; // enough cards to scroll → duplicate for a seamless loop
+            const group = (copy: boolean) => (
+              <div className="grp" key={copy ? "b" : "a"} aria-hidden={copy || undefined}>
+                {row.map((p, i) => renderCard(p, i * 2 + ri, copy))}
               </div>
-            </div>
-          ))}
+            );
+            return (
+              <div className="viewport" key={ri} data-row={ri}>
+                <div
+                  className={`track ${ri === 0 ? "to-left" : "to-right"}${loop ? " loop" : ""}`}
+                  style={{ ["--dur" as string]: `${Math.max(28, row.length * 8)}s` }}
+                >
+                  {group(false)}
+                  {loop && group(true)}
+                  {list.length === 0 && ri === 0 && <p className="empty">No projects in this category yet.</p>}
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         <div className="ctrl">
           <div className="count" aria-live="polite">
-            <b>{String(list.length ? from : 0).padStart(2, "0")}–{String(shownTo).padStart(2, "0")}</b> / {String(list.length).padStart(2, "0")}
+            <b>{String(list.length).padStart(2, "0")}</b> projects · hover to pause
           </div>
-          <div className="bar" aria-hidden>
-            <span style={{ width: `${list.length ? (shownTo / list.length) * 100 : 0}%` }} />
-          </div>
-          <button type="button" className="arrow" aria-label="Previous projects" onClick={() => go(index - 1)} disabled={index === 0}>
-            <ArrowLeft />
-          </button>
-          <button type="button" className="arrow" aria-label="Next projects" onClick={() => go(index + 1)} disabled={index >= max}>
-            <ArrowRight />
+          <div className="bar" aria-hidden />
+          <button
+            type="button"
+            className="arrow"
+            aria-label={paused ? "Play movement" : "Pause movement"}
+            onClick={() => setPaused((v) => !v)}
+          >
+            {paused ? <Play /> : <Pause />}
           </button>
         </div>
       </div>

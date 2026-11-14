@@ -39,17 +39,21 @@ export async function getCredentials(): Promise<Credential[]> {
   }
 }
 
-/** Resume URL uploaded from /admin; falls back to the PDF shipped in /public. */
+/** Files managed from /admin (resume PDF, intro video). Fall back to the PDF shipped in /public. */
 export const RESUME_FALLBACK = "/George-Jabley-Resume.pdf";
-export async function getResumeUrl(): Promise<string> {
+export async function getSiteFiles(): Promise<{ resume: string; intro: string }> {
+  const out = { resume: RESUME_FALLBACK, intro: "" };
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!base || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return RESUME_FALLBACK;
+  if (!base || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return out;
   try {
-    const res = await fetch(`${base}/rest/v1/site_files?select=url&key=eq.resume`, { headers: hdr(), next: { revalidate: 60 } });
-    if (!res.ok) return RESUME_FALLBACK;
-    const rows = (await res.json()) as { url: string }[];
-    return rows[0]?.url || RESUME_FALLBACK;
-  } catch {
-    return RESUME_FALLBACK;
-  }
+    const res = await fetch(`${base}/rest/v1/site_files?select=key,url`, { headers: hdr(), next: { revalidate: 60 } });
+    if (!res.ok) return out;
+    const rows = (await res.json()) as { key: string; url: string }[];
+    for (const r of rows) {
+      if (r.key === "resume" && r.url) out.resume = r.url;
+      if (r.key === "intro_video" && r.url) out.intro = r.url;
+    }
+  } catch {}
+  return out;
 }
+export const getResumeUrl = async () => (await getSiteFiles()).resume;

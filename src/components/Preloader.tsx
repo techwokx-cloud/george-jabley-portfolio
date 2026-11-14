@@ -19,7 +19,7 @@ export default function Preloader() {
       return;
     }
     const start = performance.now();
-    const MIN = 1100; // keep it brief: no artificial long delay
+    const MIN = 4200; // 0 → 100% counts up steadily (not too fast)
     let loaded = document.readyState === "complete";
     const onLoad = () => (loaded = true);
     window.addEventListener("load", onLoad);
@@ -28,9 +28,9 @@ export default function Preloader() {
 
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / MIN);
-      const eased = 1 - Math.pow(1 - t, 3);
+      const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // gentle ease-in-out
       // hold at 92% until the page has actually finished loading
-      const target = loaded ? eased : Math.min(eased, 0.92);
+      const target = loaded ? eased : Math.min(eased, 0.96);
       const value = Math.round(target * 100);
       setPct(value);
       if (bar.current) bar.current.style.transform = `scaleX(${target})`;

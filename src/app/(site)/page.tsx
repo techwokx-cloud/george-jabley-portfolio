@@ -5,6 +5,7 @@ import Journey from "../../components/Journey";
 import Work from "../../components/Work";
 import CaseStudy from "../../components/CaseStudy";
 import Credentials from "../../components/Credentials";
+import VirtualAssistant from "../../components/VirtualAssistant";
 import Stack from "../../components/Stack";
 import Footer from "../../components/Footer";
 import { getCredentials, getResumeUrl } from "../../lib/credentials";
@@ -26,6 +27,7 @@ export default async function Page() {
       <Work projects={projects} />
       <CaseStudy project={featured} week={weekNumber()} />
       <Credentials items={creds} />
+      <VirtualAssistant />
       <Stack />
       <Footer />
     </main>

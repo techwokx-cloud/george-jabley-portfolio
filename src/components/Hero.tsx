@@ -84,7 +84,7 @@ export default function Hero() {
           <a href="#work" className="btn" data-hero style={{ ["--d" as string]: "0.95s" }}>
             View My Work <ArrowRight />
           </a>
-          <button className="play" type="button" data-hero style={{ ["--d" as string]: "1.08s" }}>
+          <button className="play" type="button" data-intro data-hero style={{ ["--d" as string]: "1.08s" }}>
             <span>
               <Play />
             </span>

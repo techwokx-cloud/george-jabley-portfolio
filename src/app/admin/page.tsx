@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase, BUCKET } from "../../lib/supabase";
 import CredAdmin from "./CredAdmin";
+import LeadsAdmin from "./LeadsAdmin";
 import {
   CATEGORIES, KINDS, SEED, STATUSES, featuredFor, fromRow, toRow, weekNumber,
   type Project, type Status,
@@ -39,7 +40,7 @@ export default function Admin() {
   const [isNew, setIsNew] = useState(false);
   const [msg, setMsg] = useState<{ t: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"projects" | "creds">("projects");
+  const [tab, setTab] = useState<"projects" | "creds" | "leads">("projects");
   const [q, setQ] = useState("");
   const [fs, setFs] = useState("All");
 
@@ -158,6 +159,7 @@ export default function Admin() {
       <nav className="a-tabs">
         <button className={tab === "projects" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("projects")}>Projects <em>{projects.length}</em></button>
         <button className={tab === "creds" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("creds")}>Certificates &amp; Resume</button>
+        <button className={tab === "leads" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("leads")}>Leads &amp; Ads</button>
       </nav>
 
       {tab === "projects" && !form && (
@@ -170,6 +172,7 @@ export default function Admin() {
       )}
 
       {tab === "creds" && <CredAdmin />}
+      {tab === "leads" && <LeadsAdmin />}
       {tab === "projects" && msg && <div className={`a-toast ${msg.t === "ok" ? "a-ok" : "a-err"}`}>{msg.text}</div>}
 
       {tab === "projects" && !form && (

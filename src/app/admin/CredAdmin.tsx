@@ -30,14 +30,17 @@ export default function CredAdmin() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ t: "ok" | "err"; text: string } | null>(null);
   const [resume, setResume] = useState("");
+  const [intro, setIntro] = useState("");
 
   const load = useCallback(async () => {
     if (!supabase) return;
     const a = await supabase.from("credentials").select("*").order("sort", { ascending: true });
     if (a.error) return setMsg({ t: "err", text: `${a.error.message} — did you run the Update 5 SQL in supabase/schema.sql?` });
     setItems((a.data ?? []) as Credential[]);
-    const b = await supabase.from("site_files").select("url").eq("key", "resume").maybeSingle();
-    setResume(b.data?.url ?? "");
+    const b = await supabase.from("site_files").select("key,url");
+    const f = (k: string) => (b.data ?? []).find((r: { key: string; url: string }) => r.key === k)?.url ?? "";
+    setResume(f("resume"));
+    setIntro(f("intro_video"));
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -68,6 +71,25 @@ export default function CredAdmin() {
       if (error) throw error;
       setResume(url);
       setMsg({ t: "ok", text: "Resume updated. The Download Resume button uses it within a minute." });
+    } catch (e) { setMsg({ t: "err", text: `Upload failed: ${(e as Error).message}` }); }
+    setBusy(false);
+  }
+
+  async function saveIntro(url: string) {
+    const { error } = await supabase!.from("site_files").upsert({ key: "intro_video", url });
+    if (error) throw error;
+    setIntro(url);
+  }
+
+  async function uploadIntro(file: File) {
+    if (file.size > 50 * 1024 * 1024) return setMsg({ t: "err", text: "Video is over 50 MB (the free Supabase limit). Compress it, or paste a YouTube link instead." });
+    setBusy(true);
+    try {
+      const path = `intro-${Date.now()}.${file.name.split(".").pop() || "mp4"}`;
+      const { error } = await supabase!.storage.from(DOCS).upload(path, file, { contentType: file.type, upsert: true });
+      if (error) throw error;
+      await saveIntro(supabase!.storage.from(DOCS).getPublicUrl(path).data.publicUrl);
+      setMsg({ t: "ok", text: "Intro video saved. “Watch Intro” on the site now plays it (within a minute)." });
     } catch (e) { setMsg({ t: "err", text: `Upload failed: ${(e as Error).message}` }); }
     setBusy(false);
   }
@@ -108,6 +130,19 @@ export default function CredAdmin() {
           Current: {resume ? <a href={resume} target="_blank" rel="noreferrer">{resume.split("/").pop()}</a> : "using the built-in starter resume"}
         </div>
         <input type="file" accept="application/pdf" onChange={(e) => e.target.files?.[0] && uploadResume(e.target.files[0])} disabled={busy} />
+      </div>
+
+      <div className="a-card">
+        <h2 style={{ margin: 0 }}>Intro video (“Watch Intro” button)</h2>
+        <div className="a-muted" style={{ margin: "4px 0 10px" }}>
+          {intro ? <>Current: <a href={intro} target="_blank" rel="noreferrer">{intro.split("/").pop()}</a></> : "None yet — the button scrolls to your story instead."} · Upload an MP4/WebM (max 50 MB) or paste a YouTube / Vimeo link.
+        </div>
+        <input type="file" accept="video/mp4,video/webm" onChange={(e) => e.target.files?.[0] && uploadIntro(e.target.files[0])} disabled={busy} />
+        <div className="a-row" style={{ marginTop: 8 }}>
+          <input type="text" id="introUrl" placeholder="https://www.youtube.com/watch?v=…" defaultValue={/youtu|vimeo/.test(intro) ? intro : ""} style={{ flex: 1, minWidth: 220 }} />
+          <button onClick={async () => { const v = (document.getElementById("introUrl") as HTMLInputElement).value.trim(); try { await saveIntro(v); setMsg({ t: "ok", text: v ? "Link saved." : "Intro video removed." }); } catch (e) { setMsg({ t: "err", text: (e as Error).message }); } }}>Save link</button>
+          {intro && <button className="a-danger" onClick={async () => { try { await saveIntro(""); setMsg({ t: "ok", text: "Intro video removed." }); } catch (e) { setMsg({ t: "err", text: (e as Error).message }); } }}>Remove</button>}
+        </div>
       </div>
 
       {!form && (

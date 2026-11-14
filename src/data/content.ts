@@ -99,6 +99,22 @@ export const stack = {
   },
 };
 
+export const va = {
+  eyebrow: "VA ROLES",
+  body: "Alongside software, I support founders and small teams with day-to-day admin, so nothing falls through the cracks. Years of IT and operations support, sped up with AI tools.",
+  services: [
+    "Executive & admin support", "Customer service", "Email management & cleanup", "Calendar & scheduling",
+    "Social media management", "Online research", "Data entry", "Travel & reservations", "Lead generation", "Website updates",
+  ],
+  tools: [
+    { label: "Communication & scheduling", items: ["Gmail", "Outlook", "Google Calendar", "Calendly", "Zoom", "Microsoft Teams", "WhatsApp Business"] },
+    { label: "Projects, CRM & team", items: ["Trello", "Asana", "ClickUp", "Notion", "Slack", "HubSpot"] },
+    { label: "Social, design & web", items: ["Meta Business Suite", "Buffer", "Canva", "WordPress"] },
+    { label: "Office & bookkeeping", items: ["Google Workspace", "Microsoft 365", "QuickBooks"] },
+  ],
+  cta: "Hire me for VA work",
+};
+
 export const footer = {
   tagline: "Senior IT Consultant · Full-Stack Developer · AI Builder",
   copyright: "© 2026 George Jabley. All rights reserved.",

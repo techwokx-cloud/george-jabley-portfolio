@@ -9,7 +9,20 @@ type State = "idle" | "sending" | "sent" | "error";
 export default function ContactModal() {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>("idle");
-  const [form, setForm] = useState({ name: "", email: "", message: "", company: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", company: "", kind: "Other" });
+  const attr = useRef({ source: "Website", campaign: "" });
+
+  // remember where the visitor came from (ad campaign / referrer) so /admin can track responses
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("gj_attr");
+      if (raw) { attr.current = JSON.parse(raw); return; }
+      const q = new URLSearchParams(location.search);
+      const src = q.get("utm_source") || (document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, "") : "") || "Website";
+      attr.current = { source: src, campaign: q.get("utm_campaign") || "" };
+      sessionStorage.setItem("gj_attr", JSON.stringify(attr.current));
+    } catch {}
+  }, []);
   const first = useRef<HTMLInputElement>(null);
 
   // any element with [data-contact] (or a #contact link) opens the dialog
@@ -50,10 +63,10 @@ export default function ContactModal() {
       const r = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, ...attr.current }),
       });
       setState(r.ok ? "sent" : "error");
-      if (r.ok) setForm({ name: "", email: "", message: "", company: "" });
+      if (r.ok) setForm({ name: "", email: "", message: "", company: "", kind: "Other" });
     } catch {
       setState("error");
     }
@@ -78,6 +91,15 @@ export default function ContactModal() {
           <form onSubmit={submit}>
             <label>Name<input ref={first} required minLength={2} maxLength={120} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} autoComplete="name" /></label>
             <label>Email<input required type="email" maxLength={160} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" /></label>
+            <label>I'm reaching out about
+              <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })}>
+                <option value="Remote job">A remote job opportunity</option>
+                <option value="Work abroad">A work-abroad opportunity</option>
+                <option value="VA client">Virtual assistant work</option>
+                <option value="Project">A project / development work</option>
+                <option value="Other">Something else</option>
+              </select>
+            </label>
             <label>Message<textarea required minLength={5} maxLength={4000} rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} /></label>
             <input className="cm-hp" tabIndex={-1} autoComplete="off" aria-hidden value={form.company} onChange={(e) => setForm({ ...form, company: e.target.value })} />
             {state === "error" && (
