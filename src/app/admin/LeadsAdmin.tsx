@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { useSubScreen } from "./subscreen";
 
 type Lead = {
   id?: string; created_at?: string; source: string; kind: string; name: string; contact: string; company: string;
@@ -17,6 +18,7 @@ export default function LeadsAdmin() {
   const [form, setForm] = useState<Lead | null>(null);
   const [fs, setFs] = useState("All");
   const [fk, setFk] = useState("All");
+  useSubScreen(!!form, () => setForm(null), form ? (form.name || form.company || "Lead") : "");
   const [msg, setMsg] = useState<{ t: "ok" | "err"; text: string } | null>(null);
   const [camp, setCamp] = useState("va-remote-nov");
 

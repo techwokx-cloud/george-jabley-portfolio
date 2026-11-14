@@ -5,6 +5,10 @@ import type { Session } from "@supabase/supabase-js";
 import { supabase, BUCKET } from "../../lib/supabase";
 import CredAdmin from "./CredAdmin";
 import LeadsAdmin from "./LeadsAdmin";
+import JobsAdmin, { dueLabel } from "./JobsAdmin";
+import HomeAdmin from "./HomeAdmin";
+import Shell, { type Tab } from "./Shell";
+import { useSubScreen } from "./subscreen";
 import {
   CATEGORIES, KINDS, SEED, STATUSES, featuredFor, fromRow, toRow, weekNumber,
   type Project, type Status,
@@ -40,7 +44,10 @@ export default function Admin() {
   const [isNew, setIsNew] = useState(false);
   const [msg, setMsg] = useState<{ t: "ok" | "err"; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [tab, setTab] = useState<"projects" | "creds" | "leads">("projects");
+  const [tab, setTab] = useState<Tab>("home");
+  const [jobFocus, setJobFocus] = useState<string | null>(null);
+  const [apps, setApps] = useState<{ id: string; company: string; role: string; status: string; follow_up: string | null; applied_on: string | null }[]>([]);
+  const [leadsNew, setLeadsNew] = useState(0);
   const [q, setQ] = useState("");
   const [fs, setFs] = useState("All");
 
@@ -49,6 +56,21 @@ export default function Admin() {
     const t = window.setTimeout(() => setMsg(null), 5000);
     return () => window.clearTimeout(t);
   }, [msg]);
+
+  useSubScreen(!!form, () => setForm(null), form ? (isNew ? "New project" : form.name || "Project") : "");
+
+  const refreshMeta = useCallback(async () => {
+    if (!supabase) return;
+    const a = await supabase.from("applications").select("id,company,role,status,follow_up,applied_on");
+    if (!a.error) setApps((a.data ?? []) as typeof apps);
+    const l = await supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "New");
+    if (!l.error) setLeadsNew(l.count ?? 0);
+  }, []);
+
+  useEffect(() => {
+    const t = new URLSearchParams(location.search).get("tab");
+    if (t && ["home", "projects", "jobs", "leads", "creds"].includes(t)) setTab(t as Tab);
+  }, []);
 
   useEffect(() => {
     if (!supabase) return setReady(true);
@@ -68,8 +90,8 @@ export default function Admin() {
   }, []);
 
   useEffect(() => {
-    if (session) load();
-  }, [session, load]);
+    if (session) { load(); refreshMeta(); }
+  }, [session, load, refreshMeta]);
 
   const featured = useMemo(() => featuredFor(projects), [projects]);
 
@@ -147,20 +169,13 @@ export default function Admin() {
 
   return (
     <div className="a-wrap">
-      <header className="a-top">
-        <div className="a-brand"><h1>Admin<i>.</i></h1><span className="a-sub">Portfolio dashboard</span></div>
-        <div className="a-row">
-          <a className="a-link" href="/" target="_blank" rel="noopener noreferrer">View site ↗</a>
-          <span className="a-muted a-email">{session.user.email}</span>
-          <button onClick={() => supabase!.auth.signOut()}>Sign out</button>
-        </div>
-      </header>
-
-      <nav className="a-tabs">
-        <button className={tab === "projects" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("projects")}>Projects <em>{projects.length}</em></button>
-        <button className={tab === "creds" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("creds")}>Certificates &amp; Resume</button>
-        <button className={tab === "leads" ? "a-tab a-on" : "a-tab"} onClick={() => setTab("leads")}>Leads &amp; Ads</button>
-      </nav>
+      <Shell
+        tab={tab}
+        setTab={(t) => { setForm(null); setJobFocus(null); setTab(t); }}
+        email={session.user.email}
+        onSignOut={() => supabase!.auth.signOut()}
+        badges={{ projects: projects.length, leads: leadsNew, jobs: apps.filter((x) => dueLabel(x)?.cls === "a-over").length }}
+      />
 
       {tab === "projects" && !form && (
         <div className="a-stats">
@@ -171,6 +186,17 @@ export default function Admin() {
         </div>
       )}
 
+      {tab === "home" && (
+        <HomeAdmin
+          apps={apps}
+          leadsNew={leadsNew}
+          projects={projects.length}
+          go={(t) => setTab(t)}
+          openJob={(id) => { setJobFocus(id ?? "__new"); setTab("jobs"); }}
+          newProject={() => { setTab("projects"); setForm(blank((projects.at(-1)?.sort ?? 0) + 1)); setIsNew(true); }}
+        />
+      )}
+      {tab === "jobs" && <JobsAdmin focusId={jobFocus} onChanged={refreshMeta} />}
       {tab === "creds" && <CredAdmin />}
       {tab === "leads" && <LeadsAdmin />}
       {tab === "projects" && msg && <div className={`a-toast ${msg.t === "ok" ? "a-ok" : "a-err"}`}>{msg.text}</div>}

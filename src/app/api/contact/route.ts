@@ -52,15 +52,16 @@ export async function POST(req: Request) {
 
   // 2) email notification (optional, needs RESEND_API_KEY)
   const key = process.env.RESEND_API_KEY;
+  const toAddr = process.env.CONTACT_TO_EMAIL; // set in Vercel; never hard-coded in the repo
   let emailed = false;
-  if (key) {
+  if (key && toAddr) {
     try {
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
           from: process.env.CONTACT_FROM || "Portfolio <onboarding@resend.dev>",
-          to: [process.env.CONTACT_TO_EMAIL || "george.jabley@gmail.com"],
+          to: [toAddr],
           reply_to: email,
           subject: `Portfolio message from ${name}${body.kind ? ` (${body.kind})` : ""}`,
           text: `From: ${name} <${email}>\nAbout: ${body.kind ?? "-"}\nSource: ${body.source ?? "-"} ${body.campaign ?? ""}\n\n${message}`,
@@ -71,5 +72,5 @@ export async function POST(req: Request) {
   }
 
   if (saved || emailed) return NextResponse.json({ ok: true });
-  return NextResponse.json({ error: key || (sb && anon) ? "send_failed" : "not_configured" }, { status: key || (sb && anon) ? 502 : 503 });
+  return NextResponse.json({ error: (key && toAddr) || (sb && anon) ? "send_failed" : "not_configured" }, { status: (key && toAddr) || (sb && anon) ? 502 : 503 });
 }

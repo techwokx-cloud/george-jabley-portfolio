@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
+import { useSubScreen } from "./subscreen";
 import { CRED_KINDS, CRED_SEED, type Credential } from "../../lib/credentials";
 
 const DOCS = "documents";
@@ -28,6 +29,7 @@ export default function CredAdmin() {
   const [form, setForm] = useState<Credential | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [busy, setBusy] = useState(false);
+  useSubScreen(!!form, () => setForm(null), form ? (form.title || "Entry") : "");
   const [msg, setMsg] = useState<{ t: "ok" | "err"; text: string } | null>(null);
   const [resume, setResume] = useState("");
   const [intro, setIntro] = useState("");
